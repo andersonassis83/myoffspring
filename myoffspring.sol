@@ -4,8 +4,6 @@ pragma solidity ^0.4.24;
 ///@author andersonassis83 - adeassis@htmlcoin.team
 
 contract myoffspring{
-
-    address owner;
     
     struct Heir{
         bool stored;
@@ -18,23 +16,11 @@ contract myoffspring{
         string placeOfBirth;
     }
 
-    mapping(string => Heir) internal documents;
+    mapping(string => Heir) internal heirs;
 
-    event DocumentEvent(string hash);
+    event heirEvent(string hash);
     
-    constructor() 
-    public{
-        owner = msg.sender;
-    }
-    
-    ///@dev Handles any funds sent to the contract by mistake
-    
-    function empty() 
-    public{
-        owner.transfer(address(this).balance);
-    }
-    
-    ///@dev Adds a new "document" to the blockchain containing all Heir's birth attributes. To be used internally only.
+    ///@dev Adds a new record to the blockchain containing all Heir's birth attributes. To be used internally only.
     ///@param hash An unique hash based on all Heir attributes. Should be encrypted externally.
     ///@param heirFullName The full name of the Heir.
     ///@param motherFullName Heir's mother full name.
@@ -43,27 +29,28 @@ contract myoffspring{
     ///@param timeOfBirth Heir's time of birth in the format HH24mmss
     ///@param placeOfBirth Heir's place of birth. Preferrable format: City, State, Country
     
-    function addDocument(string hash, 
-                         string heirFullName, 
-                         string motherFullName, 
-                         string fatherFullName, 
-                         uint dateOfBirth, 
-                         uint timeOfBirth, 
-                         string placeOfBirth) 
+    function addHeir(string hash, 
+                     string heirFullName, 
+                     string motherFullName, 
+                     string fatherFullName, 
+                     uint dateOfBirth, 
+                     uint timeOfBirth, 
+                     string placeOfBirth) 
     internal{
         
+        //At least Hash, Heir Full Name and Date of Birth are required.
         require(bytes(hash).length > 0);
         require(bytes(heirFullName).length > 0);
         require(dateOfBirth > 0);
         
-        documents[hash].stored = true;
-        documents[hash].sender = msg.sender;
-        documents[hash].heirFullName = heirFullName;
-        documents[hash].motherFullName = motherFullName;
-        documents[hash].fatherFullName = fatherFullName;
-        documents[hash].dateOfBirth = dateOfBirth;
-        documents[hash].timeOfBirth = timeOfBirth;
-        documents[hash].placeOfBirth = placeOfBirth;    
+        heirs[hash].stored = true;
+        heirs[hash].sender = msg.sender;
+        heirs[hash].heirFullName = heirFullName;
+        heirs[hash].motherFullName = motherFullName;
+        heirs[hash].fatherFullName = fatherFullName;
+        heirs[hash].dateOfBirth = dateOfBirth;
+        heirs[hash].timeOfBirth = timeOfBirth;
+        heirs[hash].placeOfBirth = placeOfBirth;    
     }
     
     ///@dev Checks if that Heir has already been added to the blockchain. 
@@ -76,25 +63,25 @@ contract myoffspring{
     ///@param timeOfBirth Heir's time of birth in the format HH24mmss
     ///@param placeOfBirth Heir's place of birth. Preferrable format: City, State, Country
     
-    function newDocument(string hash, 
-                         string heirFullName,
-                         string motherFullName, 
-                         string fatherFullName,
-                         uint dateOfBirth, 
-                         uint timeOfBirth, 
-                         string placeOfBirth) 
+    function newHeir(string hash, 
+                     string heirFullName,
+                     string motherFullName, 
+                     string fatherFullName,
+                     uint dateOfBirth, 
+                     uint timeOfBirth, 
+                     string placeOfBirth) 
     external 
     returns(string result){
     
-        if(documents[hash].stored){
+        if(heirs[hash].stored){
 
             result = "Hash is already registered.";
 
         } else {
 
-            addDocument(hash, heirFullName, motherFullName, fatherFullName, dateOfBirth, timeOfBirth, placeOfBirth);
+            addHeir(hash, heirFullName, motherFullName, fatherFullName, dateOfBirth, timeOfBirth, placeOfBirth);
                         
-            emit DocumentEvent(hash);
+            emit heirEvent(hash);
             
             result = "Heir registered successfully";
 
@@ -106,7 +93,7 @@ contract myoffspring{
     ///@dev Displays Heir data based on their unique hash.
     ///@param hash An unique hash based on all Heir attributes. Should be encrypted externally.
        
-    function getDocument(string hash)
+    function getHeir(string hash)
     external 
     view 
     returns(string result,
@@ -117,20 +104,26 @@ contract myoffspring{
             uint timeOfBirth, 
             string placeOfBirth){
 
-        if(documents[hash].stored){
+        if(heirs[hash].stored){
             result = "Heir record found.";
         }else{
             result = "Heir not found.";
         }
         
         return(result,
-               documents[hash].heirFullName,
-               documents[hash].motherFullName, 
-               documents[hash].fatherFullName,
-               documents[hash].dateOfBirth, 
-               documents[hash].timeOfBirth, 
-               documents[hash].placeOfBirth);
+               heirs[hash].heirFullName,
+               heirs[hash].motherFullName, 
+               heirs[hash].fatherFullName,
+               heirs[hash].dateOfBirth, 
+               heirs[hash].timeOfBirth, 
+               heirs[hash].placeOfBirth);
 
+    }
+    
+    ///@dev Throw if any coin is received
+    
+    function() public payable {
+        revert();
     }
     
 }
